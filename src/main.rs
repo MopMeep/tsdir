@@ -21,6 +21,10 @@ struct Args {
     /// Timestamp verbosity level: 1=date only, 2=date+time (default), 3=date+time+seconds
     #[arg(short = 'V', long, value_name = "LEVEL", default_value = "2", value_parser = clap::value_parser!(u8).range(1..=3))]
     verbosity: u8,
+
+    /// Create parent directories as needed; do not fail if directory already exists (like mkdir -p)
+    #[arg(short = 'P', long)]
+    parents: bool,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -48,7 +52,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    fs::create_dir_all(&full_path)?;
+    if args.parents {
+        fs::create_dir_all(&full_path)?;
+    } else {
+        fs::create_dir(&full_path)?;
+    }
+    
     println!("Created: {}", full_path.display());
 
     Ok(())
