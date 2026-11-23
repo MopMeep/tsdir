@@ -6,9 +6,9 @@ use std::path::PathBuf;
 #[derive(Parser, Debug)]
 #[command(name = "tsdir", version, about = "Create directories with timestamp suffix", long_about = None)]
 struct Args {
-    /// Base name for the directory (required)
+    /// Base name for the directory (optional - if omitted, uses only timestamp)
     #[arg(value_name = "NAME")]
-    name: String,
+    name: Option<String>,
 
     /// Parent directory to create the timestamped directory in
     #[arg(short, long, value_name = "DIR", default_value = ".")]
@@ -24,7 +24,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Generate timestamp in format: YYYY-MM-DD-HH-MM
     let timestamp = Local::now().format("%Y-%m-%d-%H-%M").to_string();
-    let dir_name = format!("{}-{}", args.name, timestamp);
+    
+    let dir_name = match args.name {
+        Some(name) => format!("{}-{}", name, timestamp),
+        None => timestamp,
+    };
+    
     let full_path = args.parent.join(&dir_name);
 
     if args.dry_run {
